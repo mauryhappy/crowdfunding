@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatomia del Lancio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1a1612;--paper:#f5f0e8;--rust:#b5451b;--gold:#c9962a;--sage:#5a6e52;--slate:#3d4a5c;--mist:#e8e2d5; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.6;}
+  .container{max-width:720px;margin:0 auto;padding:0 24px;}
+  #cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:60px 0;position:relative;}
+  .cover-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--rust);margin-bottom:40px;}
+  .cover-title{font-family:'Playfair Display',serif;font-size:clamp(48px,8vw,84px);line-height:1.0;color:var(--ink);margin-bottom:8px;}
+  .cover-title em{font-style:italic;color:var(--rust);}
+  .cover-subtitle{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.15em;color:var(--slate);margin-bottom:48px;padding-top:16px;border-top:1px solid var(--mist);}
+  .cover-body{font-size:16px;line-height:1.75;color:var(--slate);max-width:500px;margin-bottom:56px;font-weight:300;}
+  .cover-body strong{color:var(--ink);font-weight:500;}
+  .btn-start{display:inline-flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;padding:18px 36px;border:none;cursor:pointer;transition:all 0.3s ease;position:relative;overflow:hidden;}
+  .btn-start::after{content:'';position:absolute;inset:0;background:var(--rust);transform:translateX(-100%);transition:transform 0.4s ease;z-index:0;}
+  .btn-start:hover::after{transform:translateX(0);}
+  .btn-start span{position:relative;z-index:1;}
+  .cover-ornament{position:absolute;right:-40px;top:50%;transform:translateY(-50%);font-family:'Playfair Display',serif;font-size:320px;color:rgba(181,69,27,0.04);line-height:1;pointer-events:none;user-select:none;}
+  #quiz{display:none;padding:60px 0 100px;}
+  .progress-bar{position:fixed;top:0;left:0;height:3px;background:var(--rust);transition:width 0.6s ease;z-index:100;}
+  .q-counter{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.3em;color:var(--rust);margin-bottom:48px;display:flex;align-items:center;gap:12px;}
+  .q-counter-line{flex:1;height:1px;background:var(--mist);}
+  .question-block{display:none;animation:fadeUp 0.5s ease forwards;}
+  .question-block.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .q-category{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+  .q-text{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,34px);line-height:1.3;color:var(--ink);margin-bottom:40px;}
+  .options{display:flex;flex-direction:column;gap:12px;}
+  .option{display:flex;align-items:flex-start;gap:16px;padding:20px 24px;border:1px solid var(--mist);cursor:pointer;transition:all 0.25s ease;background:transparent;text-align:left;font-family:'DM Sans',sans-serif;position:relative;overflow:hidden;}
+  .option::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rust);transform:scaleY(0);transition:transform 0.25s ease;}
+  .option:hover{border-color:var(--rust);background:rgba(181,69,27,0.03);}
+  .option:hover::before,.option.selected::before{transform:scaleY(1);}
+  .option.selected{border-color:var(--rust);background:rgba(181,69,27,0.06);}
+  .opt-letter{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--rust);margin-top:3px;flex-shrink:0;}
+  .opt-text{font-size:15px;line-height:1.55;color:var(--slate);font-weight:300;}
+  .q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:48px;padding-top:32px;border-top:1px solid var(--mist);}
+  .btn-nav{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;padding:12px 24px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:all 0.25s ease;}
+  .btn-nav:hover{background:var(--ink);color:var(--paper);}
+  .btn-nav:disabled{opacity:0.3;pointer-events:none;}
+  .btn-next{background:var(--ink);color:var(--paper);border:1px solid var(--ink);}
+  .btn-next:hover{background:var(--rust);border-color:var(--rust);}
+  #results{display:none;padding:80px 0 120px;animation:fadeUp 0.8s ease forwards;}
+  .result-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--rust);margin-bottom:24px;}
+  .result-title{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,54px);line-height:1.1;margin-bottom:24px;}
+  .result-intro{font-size:16px;line-height:1.75;color:var(--slate);font-weight:300;max-width:560px;border-left:3px solid var(--rust);padding-left:24px;margin-bottom:64px;}
+  .primary-card{background:var(--ink);color:var(--paper);padding:48px;margin:0 0 48px;position:relative;overflow:hidden;}
+  .primary-card::after{content:attr(data-symbol);position:absolute;right:24px;bottom:-20px;font-family:'Playfair Display',serif;font-size:160px;color:rgba(245,240,232,0.05);line-height:1;pointer-events:none;}
+  .primary-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+  .primary-name{font-family:'Playfair Display',serif;font-size:40px;color:var(--paper);margin-bottom:20px;line-height:1;}
+  .primary-text{font-size:15px;line-height:1.75;color:rgba(245,240,232,0.75);font-weight:300;max-width:480px;}
+  .motive-map{margin:0 0 48px;}
+  .motive-item{margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid var(--mist);}
+  .motive-item:last-child{border-bottom:none;}
+  .motive-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .motive-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--ink);}
+  .motive-score{font-family:'DM Mono',monospace;font-size:11px;color:var(--rust);letter-spacing:0.1em;}
+  .motive-bar-bg{height:4px;background:var(--mist);margin-bottom:12px;overflow:hidden;}
+  .motive-bar-fill{height:100%;background:var(--rust);width:0;transition:width 1.2s cubic-bezier(0.16,1,0.3,1);}
+  .motive-desc{font-size:14px;line-height:1.65;color:var(--slate);font-weight:300;}
+  .blindspot-section{padding:40px;border:1px solid var(--mist);margin-bottom:48px;}
+  .blindspot-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--sage);margin-bottom:16px;}
+  .blindspot-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:12px;}
+  .blindspot-text{font-size:14px;line-height:1.7;color:var(--slate);font-weight:300;}
+  .readiness-section{padding:40px;border:1px solid var(--slate);margin-bottom:48px;background:rgba(61,74,92,0.03);}
+  .readiness-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--slate);margin-bottom:16px;}
+  .readiness-score{font-family:'Playfair Display',serif;font-size:72px;line-height:1;color:var(--ink);margin-bottom:4px;}
+  .readiness-score span{font-size:28px;color:var(--slate);}
+  .readiness-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--rust);margin-bottom:16px;}
+  .readiness-bar-bg{height:4px;background:var(--mist);margin-bottom:20px;overflow:hidden;}
+  .readiness-bar-fill{height:100%;background:var(--slate);width:0;transition:width 1.2s cubic-bezier(0.16,1,0.3,1);}
+  .readiness-text{font-size:14px;line-height:1.7;color:var(--slate);font-weight:300;}
+  .combo-section{padding:40px;border:1px solid var(--gold);margin-bottom:48px;background:rgba(201,150,42,0.03);}
+  .combo-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+  .combo-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:12px;}
+  .combo-text{font-size:14px;line-height:1.7;color:var(--slate);font-weight:300;}
+  .ai-section{padding:40px;border:1px solid var(--rust);margin-bottom:48px;background:rgba(181,69,27,0.02);}
+  .ai-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--rust);margin-bottom:16px;}
+  .ai-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px;}
+  .ai-body{font-size:15px;line-height:1.8;color:var(--slate);font-weight:300;}
+  .ai-body p{margin-bottom:14px;}
+  .ai-body p:last-child{margin-bottom:0;}
+  .ai-loading{display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);letter-spacing:0.1em;}
+  .ai-dot{width:6px;height:6px;border-radius:50%;background:var(--rust);animation:pulse 1.2s ease-in-out infinite;}
+  .ai-dot:nth-child(2){animation-delay:0.2s;}
+  .ai-dot:nth-child(3){animation-delay:0.4s;}
+  @keyframes pulse{0%,100%{opacity:0.2;transform:scale(0.8);}50%{opacity:1;transform:scale(1);}}
+  .btn-restart{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;padding:16px 32px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:all 0.3s ease;}
+  .btn-restart:hover{background:var(--ink);color:var(--paper);}
+  @media(max-width:600px){.cover-ornament{display:none;}.primary-card{padding:32px 24px;}.blindspot-section,.combo-section,.ai-section,.readiness-section{padding:28px 20px;}}
+</style>
+</head>
+<body>
+<script>if(sessionStorage.getItem('auth')!=='ok')location.href='index.html';</script>
+
+<div id="cover"><div class="container">
+  <div class="cover-ornament">L</div>
+  <div class="cover-label">Crowdfunding — Indagine sul perché</div>
+  <h1 class="cover-title">Anatomia<br>del <em>Lancio</em></h1>
+  <div class="cover-subtitle">Dieci domande per scoprire la forza che ti spinge davvero</div>
+  <p class="cover-body">Prima di costruire una campagna, vale la pena capire <strong>da dove nasce il tuo impulso</strong>.<br>Non si tratta di capire se sei pronto — ma di riconoscere il <strong>motore profondo</strong> che ti fa volere questo lancio.<br><br>Il test distingue sei spinte: <strong>Visione, Riconoscimento, Tribù, Prova di sé, Sicurezza, Libertà.</strong></p>
+  <button class="btn-start" onclick="startQuiz()"><span>→ Inizia il test</span></button>
+</div></div>
+
+<div id="quiz">
+  <div class="progress-bar" id="progressBar"></div>
+  <div class="container">
+    <div class="q-counter"><span id="qNum">1 / 10</span><div class="q-counter-line"></div></div>
+    <div id="questionsContainer"></div>
+  </div>
+</div>
+
+<div id="results"><div class="container" id="resultsContent"></div></div>
+
+<script>
+const MOTIVES={
+  V:{name:"Visione",symbol:"◈",desc:"Lanci una campagna perché hai qualcosa da dire al mondo — un'idea, un progetto, un cambiamento. Il finanziamento è un mezzo; ciò che ti muove è la necessità di portare all'esistenza qualcosa che ancora non c'è.",blindspot:"Rischi di sottovalutare la comunicazione verso chi non condivide già la tua visione. Non basta che l'idea sia buona — devi renderla comprensibile a chi non è ancora dentro."},
+  R:{name:"Riconoscimento",symbol:"◆",desc:"Vuoi che il tuo lavoro venga visto, valutato, confermato. Il crowdfunding per te è anche un atto di legittimazione — il pubblico che finanzia dice: 'quello che fai conta'. Questo ti dà energia.",blindspot:"Se il riconoscimento è il motore principale, un lancio lento può colpirti duramente. Preparati emotivamente ai numeri bassi nelle prime ore — fanno parte del processo."},
+  T:{name:"Tribù",symbol:"◉",desc:"Il crowdfunding per te è fondamentalmente un atto comunitario. Non vuoi solo finanziamento — vuoi trovare le persone che credono in ciò che credi, costruire qualcosa insieme, sentirti meno solo in un progetto che ami.",blindspot:"Potresti trascurare la meccanica fredda della campagna — target, ricompense, timing — perché ti concentri sulle relazioni. La tribù si costruisce, ma su fondamenta solide."},
+  K:{name:"Prova di sé",symbol:"◇",desc:"Lanciare una campagna è per te anche una sfida personale. Vuoi sapere se sei capace di farlo — se il progetto regge, se riesci a convincere gli altri, se superi i tuoi limiti. Il mercato come specchio.",blindspot:"L'ego è un combustibile potente ma volatile. Se la campagna va male, rischi di interpretarlo come un giudizio su di te piuttosto che come dati da cui imparare."},
+  S:{name:"Sicurezza",symbol:"▣",desc:"Cerchi nel crowdfunding una validazione economica prima di investire davvero. È intelligenza finanziaria, non paura. Vuoi ridurre il rischio, costruire su basi solide, sapere che c'è domanda prima di impegnarti.",blindspot:"L'attesa del momento perfetto può diventare procrastinazione. Il crowdfunding testa il mercato, ma richiede anche di esporsi. A un certo punto bisogna saltare."},
+  A:{name:"Libertà",symbol:"◌",desc:"Il crowdfunding è per te un atto di indipendenza. Non vuoi editori, investitori, capi — vuoi che il tuo progetto esista alle tue condizioni, finanziato direttamente da chi lo vuole. La disintermediazione ti affascina.",blindspot:"L'autonomia totale ha un costo: devi gestire tutto, dalla comunicazione alla logistica. Valuta bene dove delegare — non tutto il controllo esterno è una minaccia."}
+};
+
+const QUESTIONS=[
+  {text:"Immagina che la tua campagna abbia raggiunto l'obiettivo. Qual è il primo pensiero?",cat:"Il momento del successo",options:[{text:"Finalmente questo progetto esiste — posso realizzarlo.",motive:"V",w:3},{text:"Le persone hanno capito quello che volevo fare.",motive:"R",w:3},{text:"Ci sono persone là fuori che ci credono quanto me.",motive:"T",w:3},{text:"Ce l'ho fatta — sapevo che potevo riuscirci.",motive:"K",w:3}]},
+  {text:"Perché il crowdfunding e non un prestito, un investitore o l'autofinanziamento?",cat:"La scelta del canale",options:[{text:"Perché voglio che il pubblico partecipi alla nascita del progetto.",motive:"T",w:3},{text:"Perché voglio validare che c'è domanda prima di rischiare i miei soldi.",motive:"S",w:3},{text:"Perché non voglio dipendere da nessuno — né banche né investitori.",motive:"A",w:3},{text:"Perché voglio che il progetto venga visto e riconosciuto.",motive:"R",w:2,also:{T:1}}]},
+  {text:"Cosa ti spaventa di più del lancio?",cat:"La paura profonda",options:[{text:"Che il progetto non venga capito — che la visione non passi.",motive:"V",w:3},{text:"Che nessuno lo finanzi — il silenzio pubblico.",motive:"R",w:3},{text:"Che le persone a cui tengo rimangano indifferenti.",motive:"T",w:3},{text:"Che dimostri che non ero all'altezza.",motive:"K",w:3}]},
+  {text:"Come descriveresti il tuo progetto a qualcuno che non sa nulla?",cat:"La narrazione spontanea",options:[{text:"Comincio dal problema che risolve o dal cambiamento che vuole creare.",motive:"V",w:3},{text:"Mostro cosa ho già fatto e perché sono credibile per farlo.",motive:"K",w:2,also:{R:1}},{text:"Racconto di chi lo farà e della comunità che si è già formata attorno.",motive:"T",w:3},{text:"Spiego che esiste perché nessun editore o distributore avrebbe voluto farlo così.",motive:"A",w:3}]},
+  {text:"Se la campagna fallisse, cosa ti peserebbe di più?",cat:"Il fallimento immaginato",options:[{text:"Che il progetto non vedrà mai la luce nella forma che avevo in testa.",motive:"V",w:3},{text:"Che il pubblico ha detto 'no' a me.",motive:"R",w:3},{text:"Che ho deluso le persone che avevano già creduto in me.",motive:"T",w:3},{text:"Che ho confermato i dubbi che avevo su di me.",motive:"K",w:3}]},
+  {text:"Quale parte del processo ti attrae di più?",cat:"Il momento preferito",options:[{text:"Costruire la storia della campagna — trovare le parole giuste per la visione.",motive:"V",w:3},{text:"Il lancio — il momento in cui diventa pubblico e si vede la risposta.",motive:"R",w:2,also:{K:1}},{text:"Il coinvolgimento dei sostenitori durante la campagna — gli aggiornamenti, i commenti.",motive:"T",w:3},{text:"La pianificazione — ridurre i rischi, costruire una struttura solida.",motive:"S",w:3}]},
+  {text:"Qual è la ricompensa più significativa che potresti offrire ai tuoi sostenitori?",cat:"Il valore per chi finanzia",options:[{text:"L'accesso anticipato a qualcosa che ancora non esiste.",motive:"V",w:2,also:{A:1}},{text:"Il loro nome nei crediti — essere parte visibile del progetto.",motive:"R",w:2,also:{T:1}},{text:"Un'esperienza esclusiva con me o con il team.",motive:"T",w:3},{text:"Una versione del prodotto che non sarà mai disponibile altrove.",motive:"A",w:3}]},
+  {text:"Quanto tempo hai aspettato prima di decidere di lanciare?",cat:"Il tempo dell'attesa",options:[{text:"Poco — quando l'idea era chiara, volevo agire subito.",motive:"V",w:2,also:{K:1}},{text:"Molto — volevo essere sicuro di essere abbastanza preparato.",motive:"K",w:2,also:{S:1}},{text:"Ho aspettato di avere una piccola rete di persone pronte a supportarmi.",motive:"T",w:3},{text:"Ho aspettato di avere abbastanza prove che il rischio fosse contenuto.",motive:"S",w:3}]},
+  {text:"Se un grande editore/distributore ti offrisse di portare avanti il tuo progetto ai suoi termini, cosa faresti?",cat:"Autonomia vs. risorse",options:[{text:"Dipende — solo se i suoi valori sono allineati con la mia visione.",motive:"V",w:2,also:{A:1}},{text:"Probabilmente sì — il riconoscimento istituzionale mi interessa.",motive:"R",w:3},{text:"Solo se posso portare con me la comunità che ho costruito.",motive:"T",w:3},{text:"No — la perdita di controllo è troppo alta.",motive:"A",w:3}]},
+  {text:"Alla fine, cosa vuoi che rimanga di questa campagna tra cinque anni?",cat:"L'eredità",options:[{text:"Il progetto in sé — che esiste e ha cambiato qualcosa.",motive:"V",w:3},{text:"La prova che ci ho creduto e l'ho fatto davvero.",motive:"K",w:2,also:{R:1}},{text:"Le persone che ho incontrato — la rete che si è formata.",motive:"T",w:3},{text:"Un modello replicabile — qualcosa fatto a modo mio che altri possono seguire.",motive:"A",w:3}]}
+];
+
+const RW=[[2,3,3,1],[3,2,1,2],[2,1,2,3],[3,2,3,2],[2,1,3,3],[3,2,3,2],[2,1,3,3],[3,1,3,2],[2,1,2,3],[3,3,3,2]];
+const RL=[
+  {min:0,max:39,tag:"Fase di esplorazione",text:"Stai ancora definendo perché vuoi farlo. È il momento più prezioso — non bruciarlo con un lancio prematuro. Chiarisci prima la motivazione, poi costruisci la campagna."},
+  {min:40,max:54,tag:"Fase di preparazione",text:"Hai una direzione chiara ma alcune fondamenta sono ancora in costruzione. Lavora sulla community e sulla narrativa prima di fissare una data di lancio."},
+  {min:55,max:69,tag:"Quasi pronto",text:"La maggior parte degli elementi c'è. Manca ancora qualcosa — probabilmente sul fronte della community o della comunicazione. Un ultimo ciclo di test e puoi lanciare."},
+  {min:70,max:84,tag:"Pronto al lancio",text:"Hai chiarezza sul perché, un pubblico che ti segue e la determinazione per farlo. Definisci una data e vai."},
+  {min:85,max:100,tag:"Pronto da ieri",text:"Ogni risposta rivela qualcuno che sa cosa vuole, perché lo vuole e come muoversi. L'unica domanda è: cosa aspetti?"}
+];
+const COMBOS={
+  "V+R":{title:"Il Visionario Riconoscibile",text:"Vuoi cambiare qualcosa nel mondo, ma hai anche bisogno che il mondo lo noti. La visione dà profondità alla campagna, il bisogno di riconoscimento ti spinge a comunicarla bene. Il rischio è costruire una narrativa più bella della realtà."},
+  "V+T":{title:"Il Costruttore di Comunità",text:"Non stai lanciando un prodotto — stai fondando un movimento. La tua visione ha bisogno di persone che la abitino con te. Attenzione a non confondere l'entusiasmo iniziale della community con una domanda reale e sostenibile."},
+  "V+K":{title:"Il Creatore Esigente",text:"Hai un'idea forte e vuoi realizzarla al meglio. Questa combinazione produce campagne di alta qualità ma rischia la paralisi: aspetti che tutto sia perfetto prima di lanciare."},
+  "V+S":{title:"Il Visionario Cauto",text:"Credi profondamente nel progetto, ma vuoi costruire su basi solide. Questa tensione rende la tua campagna credibile. Fai attenzione a non smorzare l'entusiasmo per sembrare responsabile."},
+  "V+A":{title:"Il Creatore Indipendente",text:"Hai qualcosa da dire e vuoi dirlo senza intermediari. La visione ti dà il 'cosa', l'autonomia il 'come'. Il pubblico che condivide questi valori diventerà il tuo sostenitore più fedele."},
+  "R+T":{title:"Il Costruttore di Fiducia",text:"Vuoi essere riconosciuto, soprattutto dalle persone che rispetti. Non ti basta il numero di sostenitori — vuoi che siano le persone giuste."},
+  "R+K":{title:"Il Professionista che si Espone",text:"Stai usando il crowdfunding per dimostrare qualcosa — a te stesso prima che agli altri. Attenzione: questa combinazione rende i fallimenti più pesanti. Separa il valore del progetto dalla tua identità."},
+  "R+S":{title:"Il Pragmatico Visibile",text:"Vuoi validazione del mercato e vuoi essere visto. Il rischio è ritardare il lancio aspettando condizioni ideali che non arriveranno mai."},
+  "R+A":{title:"L'Indipendente Riconoscibile",text:"Vuoi fare le cose a modo tuo e vuoi che il mondo lo sappia. Attenzione a non costruire un'identità così forte da rendere difficile ricevere feedback."},
+  "T+K":{title:"Il Maestro Comunitario",text:"Vuoi diventare bravo e vuoi farlo insieme agli altri. La tua community non è solo un pubblico — è un interlocutore. Richiede tempo e cura costante."},
+  "T+S":{title:"Il Fondatore Responsabile",text:"Costruisci comunità su basi solide, senza promettere ciò che non puoi mantenere. Il pericolo è essere così cauti da non trasmettere entusiasmo."},
+  "T+A":{title:"La Comunità Libera",text:"Non vuoi costruire un'audience — vuoi costruire un gruppo di pari, indipendente e autonomo. È una nicchia potente, ma richiede un pubblico già consapevole dei suoi valori."},
+  "K+S":{title:"Il Perfezionista Prudente",text:"Vuoi essere davvero pronto prima di lanciare. Questa combinazione produce campagne curate e credibili, ma rischia l'overthinking."},
+  "K+A":{title:"Il Maestro Indipendente",text:"Vuoi eccellere e vuoi farlo alle tue condizioni. Nessun compromesso sulla qualità, nessun compromesso sull'autonomia."},
+  "S+A":{title:"Il Costruttore Libero",text:"Vuoi costruire qualcosa di solido senza dipendere da nessuno. Razionale ed efficiente — ma ricorda che il rischio zero non esiste."}
+};
+
+let scores={V:0,R:0,T:0,K:0,S:0,A:0}, answers=new Array(10).fill(null), current=0;
+
+function startQuiz(){
+  document.getElementById('cover').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderAllQuestions(); showQuestion(0);
+}
+
+function renderAllQuestions(){
+  const c=document.getElementById('questionsContainer'); c.innerHTML='';
+  const L=['A','B','C','D'];
+  QUESTIONS.forEach((q,qi)=>{
+    const b=document.createElement('div'); b.className='question-block'; b.id='q'+qi;
+    b.innerHTML='<div class="q-category">'+q.cat+'</div><h2 class="q-text">'+q.text+'</h2><div class="options">'+
+      q.options.map((o,oi)=>'<button class="option" onclick="selectOption('+qi+','+oi+')" id="opt_'+qi+'_'+oi+'"><span class="opt-letter">'+L[oi]+'</span><span class="opt-text">'+o.text+'</span></button>').join('')+
+      '</div><div class="q-nav"><button class="btn-nav" onclick="prevQ()" '+(qi===0?'disabled':'')+'>← Indietro</button><button class="btn-nav btn-next" onclick="nextQ()" id="nextBtn_'+qi+'" disabled>'+(qi===9?'Rivela i risultati →':'Avanti →')+'</button></div>';
+    c.appendChild(b);
+  });
+}
+
+function showQuestion(idx){
+  document.querySelectorAll('.question-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById('q'+idx).classList.add('active');
+  if(answers[idx]!==null){
+    document.getElementById('opt_'+idx+'_'+answers[idx]).classList.add('selected');
+    document.getElementById('nextBtn_'+idx).disabled=false;
+  }
+  document.getElementById('progressBar').style.width=(idx/10*100)+'%';
+  document.getElementById('qNum').textContent=(idx+1)+' / 10';
+}
+
+function selectOption(qi,oi){
+  if(answers[qi]!==null) document.getElementById('opt_'+qi+'_'+answers[qi]).classList.remove('selected');
+  answers[qi]=oi;
+  document.getElementById('opt_'+qi+'_'+oi).classList.add('selected');
+  document.getElementById('nextBtn_'+qi).disabled=false;
+}
+
+function prevQ(){ if(current>0){current--;showQuestion(current);} }
+function nextQ(){ if(answers[current]===null)return; if(current===9)computeResults(); else{current++;showQuestion(current);} }
+
+function computeResults(){
+  scores={V:0,R:0,T:0,K:0,S:0,A:0};
+  answers.forEach((oi,qi)=>{
+    if(oi===null)return;
+    const o=QUESTIONS[qi].options[oi];
+    scores[o.motive]=(scores[o.motive]||0)+o.w;
+    if(o.also) Object.entries(o.also).forEach(([m,w])=>{scores[m]=(scores[m]||0)+w;});
+  });
+  showResults();
+}
+
+function calcReadiness(ans){
+  let tot=0,mx=0;
+  ans.forEach((oi,qi)=>{mx+=3; if(oi!==null)tot+=RW[qi][oi];});
+  return Math.round(tot/mx*100);
+}
+
+function buildReadiness(ans){
+  const sc=calcReadiness(ans);
+  const lv=RL.find(l=>sc>=l.min&&sc<=l.max)||RL[0];
+  return '<div class="readiness-section"><div class="readiness-label">Prontezza al lancio</div><div class="readiness-score">'+sc+'<span> / 100</span></div><div class="readiness-tag">'+lv.tag+'</div><div class="readiness-bar-bg"><div class="readiness-bar-fill" data-width="'+sc+'"></div></div><p class="readiness-text">'+lv.text+'</p></div>';
+}
+
+function buildCombo(sorted,total){
+  if(sorted.length<2) return '';
+  const key=[sorted[0][0],sorted[1][0]].sort().join('+');
+  const combo=COMBOS[key]; if(!combo)return '';
+  const p1=total>0?Math.round(sorted[0][1]/total*100):0;
+  const p2=total>0?Math.round(sorted[1][1]/total*100):0;
+  return '<div class="combo-section"><div class="combo-label">Combinazione dei top 2 motori</div><h3 class="combo-title">'+combo.title+'</h3><p style="font-family:\'DM Mono\',monospace;font-size:10px;letter-spacing:0.1em;color:var(--gold);margin-bottom:14px">'+MOTIVES[sorted[0][0]].symbol+' '+MOTIVES[sorted[0][0]].name+' '+p1+'% &nbsp;+&nbsp; '+MOTIVES[sorted[1][0]].symbol+' '+MOTIVES[sorted[1][0]].name+' '+p2+'%</p><p class="combo-text">'+combo.text+'</p></div>';
+}
+
+function showResults(){
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('results').style.display='block';
+  document.getElementById('progressBar').style.width='100%';
+  const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const total=Object.values(scores).reduce((a,b)=>a+b,0);
+  const pm=MOTIVES[sorted[0][0]];
+  document.getElementById('resultsContent').innerHTML=
+    '<div class="result-label">La tua spinta al lancio</div>'+
+    '<h2 class="result-title">Ciò che ti fa<br><em style="font-style:italic;color:var(--rust)">volere questo</em></h2>'+
+    '<p class="result-intro">Non si tratta di capire se sei pronto. Si tratta di riconoscere da dove viene l\'energia che ti ha portato fin qui — e usarla consapevolmente.</p>'+
+    '<div class="primary-card" data-symbol="'+pm.symbol+'"><div class="primary-label">Motore primario</div><div class="primary-name">'+pm.name+'</div><p class="primary-text">'+pm.desc+'</p></div>'+
+    '<div class="motive-map">'+sorted.map(([k,v])=>{const m=MOTIVES[k];const pct=total>0?Math.round(v/total*100):0;return'<div class="motive-item"><div class="motive-header"><span class="motive-name">'+m.symbol+' '+m.name+'</span><span class="motive-score">'+pct+'%</span></div><div class="motive-bar-bg"><div class="motive-bar-fill" data-width="'+pct+'"></div></div><div class="motive-desc">'+m.desc+'</div></div>';}).join('')+'</div>'+
+    '<div class="blindspot-section"><div class="blindspot-label">Punto cieco</div><h3 class="blindspot-title">Il lato nascosto di «'+pm.name+'»</h3><p class="blindspot-text">'+pm.blindspot+'</p></div>'+
+    buildReadiness(answers)+
+    buildCombo(sorted,total)+
+    '<div class="ai-section"><div class="ai-label">Analisi — Claude</div><h3 class="ai-title">Una lettura del tuo profilo</h3><div class="ai-body" id="aiBody"><div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span>Elaborazione in corso…</span></div></div></div>'+
+    '<button class="btn-restart" onclick="restart()">← Rifai il test</button>';
+  setTimeout(()=>{document.querySelectorAll('.motive-bar-fill,.readiness-bar-fill').forEach(b=>{b.style.width=b.dataset.width+'%';});},200);
+  window.scrollTo({top:0,behavior:'smooth'});
+  fetchAIAnalysis(sorted,total,calcReadiness(answers));
+}
+
+async function fetchAIAnalysis(sorted,total,readiness){
+  const top=sorted.slice(0,3).map(([k,v])=>MOTIVES[k].name+' ('+(total>0?Math.round(v/total*100):0)+'%)').join(', ');
+  const primary=MOTIVES[sorted[0][0]].name, secondary=MOTIVES[sorted[1][0]].name;
+  const lv=RL.find(l=>readiness>=l.min&&readiness<=l.max);
+  const prompt='Sei un consulente esperto di crowdfunding e psicologia della motivazione.\nAnalizza questo profilo di una persona che sta valutando di lanciare una campagna di crowdfunding:\n\n- Motore primario: '+primary+'\n- Motore secondario: '+secondary+'\n- Top 3 motori: '+top+'\n- Punteggio di prontezza al lancio: '+readiness+'/100 ('+(lv?.tag)+')\n\nScrivi un\'analisi personale e diretta in italiano, in 3 paragrafi brevi (max 4 righe ciascuno).\nTono: lucido, empatico, senza retorica motivazionale.\nStruttura:\n1. Cosa rivela questa combinazione di motori su come questa persona si avvicina al lancio\n2. La tensione o il rischio specifico da tenere d\'occhio dato il profilo\n3. Una domanda concreta da porsi prima di iniziare la campagna\n\nNon usare elenchi, titoli o grassetti. Solo testo fluido.';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'';
+    const paras=text.trim().split(/\n+/).filter(p=>p.trim());
+    document.getElementById('aiBody').innerHTML=paras.map(p=>'<p>'+p+'</p>').join('');
+  }catch(e){
+    document.getElementById('aiBody').innerHTML='<p style="color:var(--rust);font-family:\'DM Mono\',monospace;font-size:12px;">Analisi non disponibile in questo momento.</p>';
+  }
+}
+
+function restart(){
+  scores={V:0,R:0,T:0,K:0,S:0,A:0}; answers=new Array(10).fill(null); current=0;
+  document.getElementById('results').style.display='none';
+  document.getElementById('cover').style.display='flex';
+  document.getElementById('progressBar').style.width='0';
+}
+</script>
+</body>
+</html>
